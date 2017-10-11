@@ -3,7 +3,7 @@ require('./check-versions')()
 
 const config = require('../config')
 if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = JSON.parse(config.dev.env.NODE_ENV)
+	process.env.NODE_ENV = JSON.parse(config.dev.env.NODE_ENV)
 }
 
 const opn = require('opn')
@@ -22,16 +22,24 @@ const autoOpenBrowser = !!config.dev.autoOpenBrowser
 const proxyTable = config.dev.proxyTable
 
 const app = express()
+
+var goodsData = require('../mock/goods.json')
+var router = express.Router()
+router.get("/goods", function (req, res) {
+	res.json(goodsData)
+})
+app.use(router)
+
 const compiler = webpack(webpackConfig)
 
 const devMiddleware = require('webpack-dev-middleware')(compiler, {
-  publicPath: webpackConfig.output.publicPath,
-  quiet: true
+	publicPath: webpackConfig.output.publicPath,
+	quiet: true
 })
 
 const hotMiddleware = require('webpack-hot-middleware')(compiler, {
-  log: false,
-  heartbeat: 2000
+	log: false,
+	heartbeat: 2000
 })
 // force page reload when html-webpack-plugin template changes
 // currently disabled until this is resolved:
@@ -49,11 +57,11 @@ app.use(hotMiddleware)
 
 // proxy api requests
 Object.keys(proxyTable).forEach(function (context) {
-  const options = proxyTable[context]
-  if (typeof options === 'string') {
-    options = { target: options }
-  }
-  app.use(proxyMiddleware(options.filter || context, options))
+	const options = proxyTable[context]
+	if (typeof options === 'string') {
+		options = { target: options }
+	}
+	app.use(proxyMiddleware(options.filter || context, options))
 })
 
 // handle fallback for HTML5 history API
@@ -71,8 +79,8 @@ const uri = 'http://localhost:' + port
 var _resolve
 var _reject
 var readyPromise = new Promise((resolve, reject) => {
-  _resolve = resolve
-  _reject = reject
+	_resolve = resolve
+	_reject = reject
 })
 
 var server
@@ -81,25 +89,25 @@ portfinder.basePort = port
 
 console.log('> Starting dev server...')
 devMiddleware.waitUntilValid(() => {
-  portfinder.getPort((err, port) => {
-    if (err) {
-      _reject(err)
-    }
-    process.env.PORT = port
-    var uri = 'http://localhost:' + port
-    console.log('> Listening at ' + uri + '\n')
-    // when env is testing, don't need open it
-    if (autoOpenBrowser && process.env.NODE_ENV !== 'testing') {
-      opn(uri)
-    }
-    server = app.listen(port)
-    _resolve()
-  })
+	portfinder.getPort((err, port) => {
+		if (err) {
+			_reject(err)
+		}
+		process.env.PORT = port
+		var uri = 'http://localhost:' + port
+		console.log('> Listening at ' + uri + '\n')
+		// when env is testing, don't need open it
+		if (autoOpenBrowser && process.env.NODE_ENV !== 'testing') {
+			opn(uri)
+		}
+		server = app.listen(port)
+		_resolve()
+	})
 })
 
 module.exports = {
-  ready: readyPromise,
-  close: () => {
-    server.close()
-  }
+	ready: readyPromise,
+	close: () => {
+		server.close()
+	}
 }

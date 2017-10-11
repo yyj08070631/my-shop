@@ -6,6 +6,29 @@
   justify-content: space-between;
 }
 
+.header .navbar .navbar-left-container {
+	margin-left: 20px;
+}
+
+.header .navbar .navbar-left-container .navbar-brand-logo {
+	height: 80px;
+}
+
+.header .navbar .navbar-right-container .navbar-menu-container {
+	display: flex;
+	align-items: center;
+}
+
+.header .navbar .navbar-right-container .navbar-menu-container .navbar-cart-logo {
+	width: 40px;
+	height: 40px;
+}
+
+.header .navbar .navbar-right-container .navbar-menu-container .navbar-link {
+	margin-right: 20px;
+}
+
+/*  */
 .accessory-list > ul:after {
   visibility: hidden;
   display: block;
