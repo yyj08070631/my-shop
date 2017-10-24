@@ -59,6 +59,29 @@
 
 		<!-- 遮罩 -->
 		<div class="md-overlay" v-show="overLayFlag" @click.stop="closePop"></div>
+		<!-- 模态框 -->
+			<!-- 加入失败 -->
+		<modal :mdShow="mdShow" @close="closeModal">
+			<p slot="message">
+				请先登录，否则无法加入到购物车中！
+			</p>
+			<div slot="btnGroup">
+				<a href="javascript:;" class="btn btn--m" @click="closeModal">关闭</a>
+			</div>
+		</modal>
+			<!-- 加入成功 -->
+		<modal :mdShow="mdShowCart" @close="closeModal">
+			<p slot="message">
+				<svg class="icon-status-ok">
+					<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-status-ok"></use>
+				</svg>
+				<span>加入购物车成功！</span>
+			</p>
+			<div slot="btnGroup">
+				<a href="javascript:;" class="btn btn--m" @click="closeModal">继续购物</a>
+				<router-link class="btn btn--m" to="/cart">查看购物车</router-link>
+			</div>
+		</modal>
 		<nav-footer></nav-footer>
 	</div>
 </template>
@@ -68,12 +91,14 @@ import './../assets/css/product.css'
 import NavHeader from '../components/NavHeader'
 import NavFooter from '../components/NavFooter'
 import NavBread from '../components/NavBread'
+import Modal from '../components/Modal'
 import axios from 'axios'
 export default {
 	components: {
 		NavHeader,
 		NavFooter,
-		NavBread
+		NavBread,
+		Modal
 	},
 	data() {
 		return {
@@ -109,7 +134,10 @@ export default {
 			pageSize: 8,
 			sortFlag: true,
 			busy: true,
-			loading: false
+			loading: false,
+			// 展示模态框
+			mdShow: false,
+			mdShowCart: false
 		}
 	},
 	mounted: function() {
@@ -127,7 +155,7 @@ export default {
 			this.loading = true;
 			axios({
 				method: 'GET',
-				url: '/goods',
+				url: '/goods/list',
 				params: params
 			}).then((result) => {
 				let res = result.data;
@@ -181,13 +209,21 @@ export default {
 				data: {
 					productId: productId
 				}
-			}).then((res) => {
-				if (res.status == 0) {
-					alert('加入成功');
+			}).then((result) => {
+				let res = result.data;
+				if (res.status == '0') {
+					// alert('加入成功');
+					this.mdShowCart = true;
 				} else{
-					alert(`msg: ${res.msg}`);
+					// alert(`msg: ${res.data.msg}`);
+					this.mdShow = true;
 				}
 			});
+		},
+		// 关闭模态框
+		closeModal() {
+			this.mdShow = false;
+			this.mdShowCart = false;
 		},
 		// 小屏时展开价格过滤器
 		showFilterPop() {

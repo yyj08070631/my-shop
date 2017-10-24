@@ -18,7 +18,7 @@ mongoose.connection.on('disconnected', function () {
 });
 
 // 查询商品列表数据
-router.get("/", function (req, res, next) {
+router.get("/list", function (req, res, next) {
     let page = parseInt(req.param('page'));
     let pageSize = parseInt(req.param('pageSize'));
     let sort = req.param('sort');
@@ -47,12 +47,12 @@ router.get("/", function (req, res, next) {
     goodModel.sort({ 'salePrice': sort });
     goodModel.exec(function (err, doc) {
         if (err) {
-            res.json({
+            return res.json({
                 status: '1',
                 msg: err.message
             });
         } else {
-            res.json({
+            return res.json({
                 status: '0',
                 msg: '',
                 result: {
@@ -72,35 +72,29 @@ router.post('/addCart', (req, res, next) => {
 
     User.findOne({ userId: userId }, (err, userDoc) => {
         if (err) {
-            res.json({
+            return res.json({
                 status: '1',
                 msg: err.message
             });
         } else {
-            console.log(`userDoc: ${userDoc}`);
+            console.log(`cartList: ${userDoc.cartList}`);
             if (userDoc) {
                 let goodsItem = '';
-                // userDoc.cartList.forEach((val, key) => {
-                //     if (val.productId == productId) {
-                //         goodsItem = val;
-                //         val.productNum++;
-                //     }
-                // });
-                for (let i = 0; i < userDoc.cartList.length; i++) {
-                    if (userDoc.cartList[i].productId == productId) {
-                        goodsItem = userDoc.cartList[i];
-                        userDoc.cartList[i].productNum++;
+                userDoc.cartList.forEach((val, key) => {
+                    if (val.productId == productId) {
+                        goodsItem = val;
+                        val.productNum++;
                     }
-                }
+                });
                 if (goodsItem) {
                     userDoc.save((err3, doc3) => {
                         if (err3) {
-                            res.json({
+                            return res.json({
                                 status: '1',
                                 msg: err3.message
                             });
                         } else {
-                            res.json({
+                            return res.json({
                                 status: '0',
                                 msg: '',
                                 result: 'succ'
@@ -110,23 +104,27 @@ router.post('/addCart', (req, res, next) => {
                 } else {
                     Goods.findOne({ productId: productId }, (err1, doc) => {
                         if (err1) {
-                            res.json({
+                            return res.json({
                                 status: '1',
                                 msg: err1.message
                             });
                         } else {
                             if (doc) {
-                                doc.productNum = 1;
-                                doc.checked = 1;
-                                userDoc.cartList.push(doc);
+                                let docUse = JSON.parse(JSON.stringify(doc));
+                                docUse.productNum = 1;
+                                docUse.checked = 1;
+                                delete docUse._id;
+
+                                userDoc.cartList.push(docUse);
+                                // userDoc.cartList = doc;
                                 userDoc.save((err2, doc2) => {
                                     if (err2) {
-                                        res.json({
+                                        return res.json({
                                             status: '1',
                                             msg: err2.message
                                         });
                                     } else {
-                                        res.json({
+                                        return res.json({
                                             status: '0',
                                             msg: '',
                                             result: 'succ'
@@ -137,34 +135,6 @@ router.post('/addCart', (req, res, next) => {
                         }
                     });
                 }
-                Goods.findOne({ productId: productId }, (err1, doc) => {
-                    if (err1) {
-                        res.json({
-                            status: '1',
-                            msg: err1.message
-                        });
-                    } else {
-                        if (doc) {
-                            doc.productNum = 1;
-                            doc.checked = 1;
-                            userDoc.cartList.push(doc);
-                            userDoc.save((err2, doc2) => {
-                                if (err2) {
-                                    res.json({
-                                        status: '1',
-                                        msg: err2.message
-                                    });
-                                } else {
-                                    res.json({
-                                        status: '0',
-                                        msg: '',
-                                        result: 'succ'
-                                    });
-                                }
-                            });
-                        }
-                    }
-                });
             }
         }
     });

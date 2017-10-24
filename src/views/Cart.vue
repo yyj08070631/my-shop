@@ -135,34 +135,88 @@
 	</div>
 </template>
 <style>
-.input-sub,
-.input-add {
-	min-width: 40px;
-	height: 100%;
-	border: 0;
-	color: #605F5F;
-	text-align: center;
-	font-size: 16px;
-	overflow: hidden;
-	display: inline-block;
-	background: #f0f0f0;
-}
+	.input-sub,
+	.input-add {
+		min-width: 40px;
+		height: 100%;
+		border: 0;
+		color: #605F5F;
+		text-align: center;
+		font-size: 16px;
+		overflow: hidden;
+		display: inline-block;
+		background: #f0f0f0;
+	}
 
-.item-quantity .select-self-area {
-	background: none;
-	border: 1px solid #f0f0f0;
-}
+	.item-quantity .select-self-area {
+		background: none;
+		border: 1px solid #f0f0f0;
+	}
 
-.item-quantity .select-self-area .select-ipt {
-	display: inline-block;
-	padding: 0 3px;
-	width: 30px;
-	min-width: 30px;
-	text-align: center;
-}
+	.item-quantity .select-self-area .select-ipt {
+		display: inline-block;
+		padding: 0 3px;
+		width: 30px;
+		min-width: 30px;
+		text-align: center;
+	}
 </style>
 <script>
+import '../assets/css/checkout.css'
+import NavHeader from '../components/NavHeader'
+import NavFooter from '../components/NavFooter'
+import NavBread from '../components/NavBread'
+import Modal from '../components/Modal'
+import axios from 'axios'
 export default {
+	data() {
+		return {
+			// 商品列表
+			cartList: [],
+			// 
+		}
+	},
+	components: {
+		NavHeader,
+		NavFooter,
+		NavBread,
+		Modal
+	},
+	methods: {
+		// 初始化购物车数据
+		init() {
+			axios({
+				method: 'GET',
+				url: '/users/cartList'
+			}).then((result)=>{
+				let res = result.data;
+				console.log(res.result);
+				this.cartList = res.result;
+			});
+		},
+		// 确认删除弹框
+		delCartConfirm() {
 
+		},
+		// 删除购物车商品
+		delCart() {
+			axios({
+				method: 'POST',
+				url: '/users/delCart',
+				data: {
+					productId: this.productId
+				}
+			}).then((result)=>{
+
+			});
+		},
+		// 关闭删除弹窗
+		closeModal() {
+			this.modalConfirm = false;
+		}
+	},
+	mounted() {
+		this.init();
+	}
 }
 </script>
