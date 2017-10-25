@@ -95,4 +95,64 @@ router.get('/cartList', (req, res, next)=>{
 	});
 });
 
+// 删除购物车商品
+router.post('/delCart', (req, res, next)=>{
+	let productId = req.body.productId,
+		userId = req.cookies.userId;
+	
+	User.update({ 
+		userId: userId 
+	},
+	{
+		$pull: {
+			cartList: {
+				productId: productId
+			}
+		}
+	},
+	(err, doc)=>{
+		if (err) {
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		} else {
+			res.json({
+				status: '0',
+				msg: '',
+				result: 'succ'
+			});
+		}
+	});
+});
+
+// 编辑购物车商品数量
+router.post('/editCart', (req, res, next)=>{
+	let userId = req.cookies.userId,
+		productId = req.body.productId,
+		productNum = req.body.productNum;
+	User.update({ 
+		'userId': userId, 'cartList.productId': productId
+	},{
+		'cartList.$.productNum': productNum
+	},(err, doc)=>{
+		if (err) {
+			res.json({
+				status: '1',
+				msg: err.message,
+				result: ''
+			});
+		} else {
+			if (doc) {
+				res.json({
+					status: '1',
+					msg: '',
+					result: 'succ'
+				});
+			}
+		}
+	});
+});
+
 module.exports = router;

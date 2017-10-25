@@ -86,7 +86,7 @@
 								</div>
 								<div class="cart-tab-5">
 									<div class="cart-item-opration">
-										<a href="javascript:;" class="item-edit-btn" @click="delCartConfirm(item)">
+										<a href="javascript:;" class="item-edit-btn" @click="delCartConfirm(item.productId)">
 											<svg class="icon icon-del">
 												<use xlink:href="#icon-del"></use>
 											</svg>
@@ -173,7 +173,10 @@ export default {
 		return {
 			// 商品列表
 			cartList: [],
-			// 
+			// 模态框是否显示
+			modalConfirm: false,
+			// 删除的产品ID
+			productId: ''
 		}
 	},
 	components: {
@@ -194,9 +197,10 @@ export default {
 				this.cartList = res.result;
 			});
 		},
-		// 确认删除弹框
-		delCartConfirm() {
-
+		// 确认删除（弹窗）
+		delCartConfirm(productId) {
+			this.modalConfirm = true;
+			this.productId = productId;
 		},
 		// 删除购物车商品
 		delCart() {
@@ -206,13 +210,41 @@ export default {
 				data: {
 					productId: this.productId
 				}
-			}).then((result)=>{
-
+			}).then((response)=>{
+				let res = response.data;
+				if (res.status == '0') {
+					this.closeModal();
+					this.init();
+				} else {
+					alert(res.msg);
+				}
 			});
 		},
 		// 关闭删除弹窗
 		closeModal() {
 			this.modalConfirm = false;
+		},
+		// 增减购物车数量
+		editCart(flag, item) {
+			if (flag == 'add') {
+				item.productNum ++;
+			} else {
+				if (item.productNum <= 1) {
+					return;
+				}
+				item.productNum --;
+			}
+			axios({
+				method: 'POST',
+				url: '/users/editCart',
+				data: {
+					productId: item.productId,
+					productNum: item.productNum
+				}
+			}).then((response)=>{
+				let res = response.data;
+				console.log(res.result);
+			});
 		}
 	},
 	mounted() {
