@@ -132,7 +132,7 @@
 						</div>
 					</div>
 					<div class="next-btn-wrap">
-						<router-link class="btn btn--m btn--red" v-bind:to="{path:'orderConfirm',query:{'addressId':selectedAddrId}}">Next</router-link>
+						<router-link class="btn btn--m btn--red" v-bind:to="{path:'/orderConfirm',query:{'addressId':selectedAddrId}}">Next</router-link>
 					</div>
 				</div>
 			</div>
@@ -153,7 +153,113 @@
 
 </style>
 <script>
+import NavHeader from '../components/NavHeader'
+import NavFooter from '../components/NavFooter'
+import NavBread from '../components/NavBread'
+import Modal from '../components/Modal'
+import axios from 'axios'
+import { currency } from '../util/currency'
 export default {
-
+	data() {
+		return {
+			// 地址列表
+			addressList: [],
+			// 限制显示的条数
+			limit: 3,
+			// 当前选中地址编号（遍历中的下标）
+			checkIndex: 0,
+			// 被选择的地址ID（存放用于提交订单使用）
+			selectedAddrId: 0,
+			// 模态框展示
+			isMdShow: false,
+			// 缓存用于删除的地址
+			addressId: ''
+		}
+	},
+	components: {
+		NavHeader,
+		NavFooter,
+		NavBread,
+		Modal
+	},
+	methods: {
+		// 获取地址列表
+		init() {
+			axios({
+				method: 'GET',
+				url: '/users/addressList'
+			}).then((response)=>{
+				let res = response.data;
+				// console.log(res.result);
+				this.addressList = res.result;
+			});
+		},
+		// 展开地址列表
+		expand() {
+			if (this.limit == 3) {
+				this.limit = this.addressList.length;
+			} else {
+				this.limit = 3;
+			}
+		},
+		// 设置默认地址
+		setDefault(addressId) {
+			axios({
+				method: 'POST',
+				url: '/users/setDefault',
+				data: {
+					addressId: addressId
+				}
+			}).then((response)=>{
+				let res = response.data;
+				console.log(res.result);
+				this.init();
+			});
+		},
+		// 关闭模态框
+		closeModal() {
+			this.isMdShow = false;
+		},
+		// 删除地址配置
+		delAddressConfirm(addressId) {
+			this.isMdShow = true;
+			this.addressId = addressId;
+		},
+		// 删除地址
+		delAddress() {
+			axios({
+				method: 'POST',
+				url: '/users/delAddress',
+				data: {
+					addressId: this.addressId
+				}
+			}).then((response)=>{
+				let res = response.data;
+				if (res.status == '0') {
+					this.addressList.forEach((item, index)=>{
+						if (item.addressId == this.addressId) {
+							this.addressList.splice(index, 1);
+						}
+					});
+					this.isMdShow = false;
+					console.log(res.result);
+				} else {
+					console.log(res.msg);
+				}
+			});
+		}
+	},
+	computed: {
+		addressListFilter() {
+			return this.addressList.slice(0, this.limit);
+		}
+	},
+	mounted() {
+		this.init();
+	},
+	filters: {
+		// 货币格式化
+		currency: currency
+	}
 }
 </script>

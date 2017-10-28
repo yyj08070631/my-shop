@@ -44,7 +44,49 @@
 	</div>
 </template>
 <script>
+import NavHeader from '../components/NavHeader'
+import NavFooter from '../components/NavFooter'
+import NavBread from '../components/NavBread'
+import Modal from '../components/Modal'
+import axios from 'axios'
+import { currency } from '../util/currency'
 export default {
-
+	data() {
+		return {
+			orderId: '',
+			orderTotal: 0,
+		}
+	},
+	components: {
+		NavHeader,
+		NavFooter,
+		NavBread,
+		Modal
+	},
+	methods: {
+		init() {
+			let orderId = this.$route.query.orderId;
+			axios({
+				method: 'GET',
+				url: '/users/orderList',
+				params: {
+					orderId: orderId
+				}
+			}).then((response)=>{
+				let res = response.data;
+				if (res.status == '0') {
+					this.orderId = orderId;
+					this.orderTotal = res.result.orderTotal;
+				}
+			});
+		}
+	},
+	mounted() {
+		this.init();
+	},
+	filters: {
+		// 货币格式化
+		currency: currency
+	}
 }
 </script>

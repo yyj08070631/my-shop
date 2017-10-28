@@ -68,7 +68,7 @@
 									</div>
 								</div>
 								<div class="cart-tab-2">
-									<div class="item-price">{{item.salePrice|currency('$')}}</div>
+									<div class="item-price">{{item.salePrice | currency}}</div>
 								</div>
 								<div class="cart-tab-3">
 									<div class="item-quantity">
@@ -114,7 +114,7 @@
 						<div class="cart-foot-r">
 							<div class="item-total">
 								Item total:
-								<span class="total-price">{{totalPrice|currency('$')}}</span>
+								<span class="total-price">{{totalPrice|currency}}</span>
 							</div>
 							<div class="btn-wrap">
 								<a class="btn btn--red" v-bind:class="{'btn--dis':checkedCount==0}" @click="checkOut">Checkout</a>
@@ -124,13 +124,13 @@
 				</div>
 			</div>
 		</div>
-		<Modal :mdShow="modalConfirm" @close="closeModal">
+		<modal :mdShow="modalConfirm" @close="closeModal">
 			<p slot="message">你确认要删除此条数据吗?</p>
 			<div slot="btnGroup">
 				<a class="btn btn--m" href="javascript:;" @click="delCart">确认</a>
 				<a class="btn btn--m btn--red" href="javascript:;" @click="modalConfirm = false">关闭</a>
 			</div>
-		</Modal>
+		</modal>
 		<nav-footer></nav-footer>
 	</div>
 </template>
@@ -168,6 +168,7 @@ import NavFooter from '../components/NavFooter'
 import NavBread from '../components/NavBread'
 import Modal from '../components/Modal'
 import axios from 'axios'
+import { currency } from '../util/currency'
 export default {
 	data() {
 		return {
@@ -228,24 +229,82 @@ export default {
 		editCart(flag, item) {
 			if (flag == 'add') {
 				item.productNum ++;
-			} else {
+			} else if (flag == 'minus') {
 				if (item.productNum <= 1) {
 					return;
 				}
 				item.productNum --;
+			} else {
+				item.checked = item.checked == '1' ? '0' : '1';
 			}
 			axios({
 				method: 'POST',
 				url: '/users/editCart',
 				data: {
 					productId: item.productId,
-					productNum: item.productNum
+					productNum: item.productNum,
+					checked: item.checked
 				}
 			}).then((response)=>{
 				let res = response.data;
 				console.log(res.result);
 			});
+		},
+		// 全选
+		toggleCheckAll() {
+			let flag = !this.checkAllFlag;
+			this.cartList.forEach((item)=>{
+				item.checked = flag ? '1' : '0';
+			});
+			axios({
+				method: 'POST',
+				url: '/users/editCheckAll',
+				data: {
+					checkAll: flag
+				}
+			}).then((response)=>{
+				let res = response.data;
+				console.log(res.result);
+			});;
+		},
+		// 下单购物车
+		checkOut() {
+			if (this.checkedCount > 0) {
+				this.$router.push({
+					path: '/address'
+				});
+			}
 		}
+	},
+	computed: {
+		// 全选标识
+		checkAllFlag() {
+			return this.checkedCount == this.cartList.length;
+		},
+		// 选中个数
+		checkedCount() {
+			let i = 0;
+			this.cartList.forEach((item)=>{
+				if (item.checked == '1') {
+					i ++;
+				}
+			});
+			return i;
+		},
+		// 计算总金额
+		totalPrice() {
+			let money = 0;
+			this.cartList.forEach((item)=>{
+				if (item.checked == '1') {
+					money += parseFloat(item.salePrice) * parseInt(item.productNum)
+				}
+			});
+			return money;
+		}
+	},
+	filters: {
+		// 货币格式化
+		currency: currency
 	},
 	mounted() {
 		this.init();

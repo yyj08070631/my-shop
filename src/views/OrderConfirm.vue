@@ -134,7 +134,81 @@
 	</div>
 </template>
 <script>
+import NavHeader from '../components/NavHeader'
+import NavFooter from '../components/NavFooter'
+import NavBread from '../components/NavBread'
+import Modal from '../components/Modal'
+import axios from 'axios'
+import { currency } from '../util/currency'
 export default {
+	data() {
+		return {
+			// 购物车列表
+			cartList: [],
+			// 邮费，折扣，税费，订单总金额，结算后金额
+			shipping: 100,
+			discount: 200,
+			tax: 400,
+			subTotal: 0,
+			orderTotal: 0
+		}
+	},
+	components: {
+		NavHeader,
+		NavFooter,
+		NavBread,
+		Modal
+	},
+	methods: {
+		// 初始化订单数据
+		init() {
+			axios({
+				method: 'GET',
+				url: '/users/cartList'
+			}).then((response)=>{
+				let res = response.data;
+				this.cartList = res.result;
 
+				this.cartList.forEach((item, index)=>{
+					if (item.checked == '1') {
+						this.subTotal += item.salePrice * item.productNum;
+					}
+				});
+
+				this.orderTotal = this.subTotal + this.shipping - this.discount + this.tax;
+			});
+		},
+		// 生成订单
+		payMent() {
+			let addressId = this.$route.query.addressId;
+			axios({
+				method: 'POST',
+				url: '/users/payment',
+				data: {
+					orderTotal: this.orderTotal,
+					addressId: addressId
+				}
+			}).then((response)=>{
+				let res = response.data;
+				if (res.status == '0') {
+					this.$router.push({ 
+						path: '/orderSuccess', 
+						query: { 
+							orderId: res.result.orderId
+						} 
+					});
+				} else {
+					console.log(res.msg);
+				}
+			});
+		}
+	},
+	mounted() {
+		this.init();
+	},
+	filters: {
+		// 货币格式化
+		currency: currency
+	}
 }
 </script>
