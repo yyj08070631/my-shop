@@ -54,7 +54,7 @@
 							<li v-for="item in cartList">
 								<div class="cart-tab-1">
 									<div class="cart-item-check">
-										<a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'check':item.checked=='1'}" @click="editCart('checked',item)">
+										<a href="javascript:void(0);" class="checkbox-btn item-check-btn" v-bind:class="{'check':item.checked=='1'}" @click="editCart('checked',item)">
 											<svg class="icon icon-ok">
 												<use xlink:href="#icon-ok"></use>
 											</svg>
@@ -101,7 +101,7 @@
 					<div class="cart-foot-inner">
 						<div class="cart-foot-l">
 							<div class="item-all-check">
-								<a href="javascipt:;" @click="toggleCheckAll">
+								<a href="javascript:void(0);" @click="toggleCheckAll">
 									<span class="checkbox-btn item-check-btn" v-bind:class="{'check':checkAllFlag}">
 										<svg class="icon icon-ok">
 											<use xlink:href="#icon-ok" />
@@ -127,7 +127,7 @@
 		<modal :mdShow="modalConfirm" @close="closeModal">
 			<p slot="message">你确认要删除此条数据吗?</p>
 			<div slot="btnGroup">
-				<a class="btn btn--m" href="javascript:;" @click="delCart">确认</a>
+				<a class="btn btn--m" href="javascript:void(0);" @click="delCart">确认</a>
 				<a class="btn btn--m btn--red" href="javascript:;" @click="modalConfirm = false">关闭</a>
 			</div>
 		</modal>
@@ -247,7 +247,9 @@ export default {
 				}
 			}).then((response)=>{
 				let res = response.data;
-				console.log(res.result);
+				if (res.status == '0') {
+					console.log(res.result);
+				}
 			});
 		},
 		// 全选

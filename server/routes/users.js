@@ -149,7 +149,7 @@ router.post('/editCart', (req, res, next)=>{
 		} else {
 			if (doc) {
 				res.json({
-					status: '1',
+					status: '0',
 					msg: '',
 					result: 'succ'
 				});
