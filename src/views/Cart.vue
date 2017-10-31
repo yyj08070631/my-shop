@@ -74,7 +74,7 @@
 									<div class="item-quantity">
 										<div class="select-self select-self-open">
 											<div class="select-self-area">
-												<a class="input-sub" @click="editCart('minu',item)">-</a>
+												<a class="input-sub" @click="editCart('minus',item)">-</a>
 												<span class="select-ipt">{{item.productNum}}</span>
 												<a class="input-add" @click="editCart('add',item)">+</a>
 											</div>
@@ -86,7 +86,7 @@
 								</div>
 								<div class="cart-tab-5">
 									<div class="cart-item-opration">
-										<a href="javascript:;" class="item-edit-btn" @click="delCartConfirm(item.productId)">
+										<a href="javascript:;" class="item-edit-btn" @click="delCartConfirm(item)">
 											<svg class="icon icon-del">
 												<use xlink:href="#icon-del"></use>
 											</svg>
@@ -176,8 +176,8 @@ export default {
 			cartList: [],
 			// 模态框是否显示
 			modalConfirm: false,
-			// 删除的产品ID
-			productId: ''
+			// 删除的产品对象
+			delItem: []
 		}
 	},
 	components: {
@@ -199,9 +199,9 @@ export default {
 			});
 		},
 		// 确认删除（弹窗）
-		delCartConfirm(productId) {
+		delCartConfirm(delItem) {
 			this.modalConfirm = true;
-			this.productId = productId;
+			this.delItem = delItem;
 		},
 		// 删除购物车商品
 		delCart() {
@@ -209,13 +209,14 @@ export default {
 				method: 'POST',
 				url: '/users/delCart',
 				data: {
-					productId: this.productId
+					productId: this.delItem.productId
 				}
 			}).then((response)=>{
 				let res = response.data;
 				if (res.status == '0') {
 					this.closeModal();
 					this.init();
+					this.$store.commit('updateCartCount', -this.delItem.productNum);
 				} else {
 					alert(res.msg);
 				}
@@ -246,10 +247,14 @@ export default {
 					checked: item.checked
 				}
 			}).then((response)=>{
-				let res = response.data;
-				if (res.status == '0') {
-					console.log(res.result);
+				let res = response.data,
+					num = 0;
+				if (flag == 'add') {
+					num = 1;
+				} else if (flag == 'minus') {
+					num = -1;
 				}
+				this.$store.commit('updateCartCount', num);
 			});
 		},
 		// 全选

@@ -2,7 +2,7 @@
 	<div>
 		<nav-header></nav-header>
 		<nav-bread>
-			<span slot="bread">Goods</span>
+			<span>Goods</span>
 		</nav-bread>
 		<div class="accessory-result-page accessory-page">
 			<div class="container">
@@ -214,6 +214,7 @@ export default {
 				if (res.status == '0') {
 					// alert('加入成功');
 					this.mdShowCart = true;
+					this.$store.commit('updateCartCount', 1);
 				} else{
 					// alert(`msg: ${res.data.msg}`);
 					this.mdShow = true;

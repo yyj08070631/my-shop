@@ -32,7 +32,7 @@
 					<a href="javascript:void(0)" class="navbar-link" @click="loginModalFlag=true" v-if="!nickName">Login</a>
 					<a href="javascript:void(0)" class="navbar-link" @click="logout" v-if="nickName">Logout</a>
 					<div class="navbar-cart-container">
-						<span class="navbar-cart-count"></span>
+						<span class="navbar-cart-count">{{nickName ? cartCount : ''}}</span>
 						<a class="navbar-link navbar-cart-link" href="/#/cart">
 							<svg class="navbar-cart-logo">
 								<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -76,12 +76,13 @@
 <script>
 import '../assets/css/login.css'
 import axios from 'axios'
+import { mapState } from 'vuex'
 export default {
 	data() {
 		return {
 			userName: '',
 			userPwd: '',
-			nickName: false,
+			// nickName: '',
 
 			errorTip: false,
 			// 控制登录模态框是否显示
@@ -100,7 +101,13 @@ export default {
 			}).then((result)=>{
 				let res = result.data;
 				if (res.status == '0') {
-					this.nickName = res.result.userName;
+					// this.nickName = res.result.userName;
+					this.$store.commit('updateUserInfo', res.result.userName);
+					this.getCartCount('init');
+				} else {
+					if (this.$route.path != '/') {
+						this.$router.push('/');
+					}
 				}
 			});
 		},
@@ -121,7 +128,8 @@ export default {
 				if (res.status == '0') {
 					this.errorTip = false;
 					this.loginModalFlag = false;
-					this.nickName = res.result.userName;
+					this.$store.commit('updateUserInfo', res.result.userName);
+					this.getCartCount('init');
 					console.log(res.msg);
 				} else {
 					this.errorTip = true;
@@ -140,11 +148,104 @@ export default {
 			}).then((result)=>{
 				let res = result.data;
 				if (res.status == '0') {
-					this.nickName = '';
+					this.$store.commit('updateUserInfo', '');
 					console.log(res.msg);
 				}
 			});
+		},
+		getCartCount(type) {
+			axios({
+				method: 'GET',
+				url: '/users/getCartCount'
+			}).then((response)=>{
+				let res = response.data;
+				if (type == 'init') {
+					this.$store.commit('initCartCount', res.result);
+				} else {
+					this.$store.commit('updateCartCount', res.result);
+				}
+			});
 		}
+	},
+	computed: {
+		// nickName() {
+		// 	return this.$store.state.nickName;
+		// },
+		// cartCount() {
+		// 	return this.$store.state.cartCount;
+		// }
+		...mapState(['nickName', 'cartCount'])
 	}
 }
 </script>
+<style>
+.header {
+    width: 100%;
+    background-color: white;
+    font-family: "moderat",sans-serif;
+    font-size: 16px;
+}
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    width: 100%;
+    height: 70px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 5px 20px 10px 20px;
+}
+.navbar-left-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-left: -20px;
+}
+.navbar-brand-logo {
+    /*width: 120px;*/
+}
+.header a, .footer a {
+    color: #666;
+    text-decoration: none;
+}
+a {
+	-webkit-transition: color .3s ease-out;
+	transition: color .3s ease-out;
+}
+.navbar-right-container {
+    display: none;
+    justify-content: flex-start;
+    align-items: center;
+}
+.navbar-menu-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 10px;
+}
+.navbar-link {
+    padding-left: 15px;
+}
+.navbar-cart-container {
+    position: relative;
+}
+.navbar-cart-count {
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: -9px;
+    right: -11px;
+    width: 20px;
+    border-radius: 10px;
+    color: white;
+    background-color: #eb767d;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+.navbar-cart-logo {
+    width: 25px;
+    height: 25px;
+    transform: scaleX(-1);
+}
+</style>
